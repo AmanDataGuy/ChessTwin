@@ -1,0 +1,54 @@
+# ChessPersona default config. See plan_ahead.md Section 1 for why these values were chosen.
+
+data:
+  chesscom_usernames: ["stronkkkest", "desichessss", "due4awinn"]   # desichessss: 2022-04 to 2025-07; due4awinn: 2022-04, 2024-12 to 2025-09
+  lichess_username: "reacher2024"
+  merge_platforms: true
+  raw_personal_dir: "data/raw/personal"
+  raw_pretrain_dir: "data/raw/pretrain"
+  # Resolved from Stage 1's actual pulled games (14,451 total: 4,461 Chess.com + 9,990 Lichess).
+  # ~91% of games are Bullet speed (chess.com "60"/"30"/"10+0.1", lichess "30+0"/"60+0"/"15+0").
+  main_time_control: "bullet"
+  rating_band: [2150, 2650]   # centered on Lichess bullet rating 2409, +/-250 per spec section 4b
+
+pretrain:
+  target_positions: 3_000_000
+  target_games: 70_000   # rough estimate to reach target_positions at ~35-50 avg half-moves/bullet-game; revisit after Stage 4 measures the real average
+  database_month: "2026-07"   # most recent fully-available Lichess monthly dump at spec time
+  lichess_database_url: "https://database.lichess.org/"
+
+model:
+  residual_blocks: 6
+  channels: 64
+  board_planes: 19   # 12 piece/color + 1 side-to-move + 4 castling + 1 en passant + 1 halfmove clock (see models/encoding.py)
+
+training:
+  batch_size: 256
+  batch_size_fallback: 128
+  mixed_precision: true
+  pretrain_lr: 0.001
+  finetune_lr: 0.0002
+  pretrain_epochs: 8
+  finetune_epochs: 5
+  # This dev machine cannot run DataLoader multiprocessing workers without
+  # OOMing (Windows spawn duplicates the loaded dataframe per worker), so
+  # training runs single-process CPU-bound FEN encoding -- slower per epoch,
+  # but the user opted for a long, uncapped, quality-first run over a fast
+  # capped one (first attempt at 1 pretrain epoch / 400k-capped finetune
+  # blundered badly and didn't specialize in Aman's openings -- too little
+  # signal). null caps below mean "use the full split". See plan_ahead.md.
+  pretrain_max_train_positions: null
+  pretrain_max_val_positions: 20_000
+  finetune_max_train_positions: null
+  finetune_max_val_positions: 15_000
+  # Opening/early-middlegame positions (move_number < 10) are duplicated 3x in
+  # the fine-tune train set only (not val) -- amplifies Aman's specific
+  # repertoire signal, which is otherwise a small fraction of total rows next
+  # to the much larger mid/endgame position count. Added after live play
+  # showed the model wasn't reliably choosing Aman's known openings (French,
+  # Catalan) even after the first full retrain.
+  finetune_oversample_early_moves_factor: 2
+  wandb_mode: "disabled"   # wandb's background service process crashed a multi-hour unattended run under this machine's memory pressure (ConnectionResetError, killed training); print-based logging (captured in the run's own output) is sufficient for this project. Flip to "online"/"offline" if wandb is needed again.
+
+engine:
+  stockfish_path: "engine/stockfish/stockfish-windows-x86-64-universal.exe"   # Stockfish 19, downloaded for Stage 7
