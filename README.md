@@ -89,7 +89,7 @@ Splits are 80/10/10 at the game level, never the position level. Positions withi
 |---|---|
 | Code, config, docs, move vocabulary | this GitHub repo |
 | Checkpoints (`pretrained.pt`, `finetuned.pt` + Run 4/5 experiments) | [huggingface.co/amanDS5153/ChessTwin](https://huggingface.co/amanDS5153/ChessTwin) (public) |
-| Raw PGNs, processed parquet, splits, eval outputs | `amanDS5153/ChessTwin-data` HF dataset (private) |
+| Raw PGNs, processed parquet, splits, eval outputs, original project spec | `amanDS5153/ChessTwin-data` HF dataset (private) |
 | Stockfish | not stored: install it yourself |
 | `.env` (Lichess tokens) | local only, never committed |
 

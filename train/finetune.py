@@ -3,7 +3,7 @@
 Loads the Stage 8 checkpoint and continues training on the personal dataset at
 a lower learning rate than pretraining, same cross-entropy objective. This is
 the step that turns a generic-human policy into a personalized one -- the
-spec's core hypothesis (chess_persona_project_spec.md Section 1) is that this
+project's core hypothesis is that this
 step measurably improves move-prediction accuracy on Aman's own held-out games
 over both the pretrained-only model and a raw Stockfish baseline.
 """

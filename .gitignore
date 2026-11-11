@@ -13,4 +13,3 @@ wandb/
 .env
 engine/
 .claude/
-chess_persona_project_spec.md

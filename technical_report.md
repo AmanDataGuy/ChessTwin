@@ -8,7 +8,7 @@ Last updated: 2026-11-12.
 
 ## 1. What this is
 
-A model that predicts the move a specific person (Aman) would play in a given chess position — behavioral cloning, not RL (see `chess_persona_project_spec.md` §2 for why). Pretrained on general human bullet games in Aman's rating band, then fine-tuned on his own games. Deployed as a Lichess bot (`ChessTwinBot`) rather than a custom web app, following the same deployment pattern as Maia Chess's own bot accounts.
+A model that predicts the move a specific person (Aman) would play in a given chess position — behavioral cloning, not RL: the goal is to imitate one human's choices, not to find winning moves. (The original project spec is archived at `docs/chess_persona_project_spec.md` in the private `amanDS5153/ChessTwin-data` HF repo.) Pretrained on general human bullet games in Aman's rating band, then fine-tuned on his own games. Deployed as a Lichess bot (`ChessTwinBot`) rather than a custom web app, following the same deployment pattern as Maia Chess's own bot accounts.
 
 **Precedent this is built on** (established before writing any code):
 - **Maia Chess** (McIlroy-Young et al., KDD 2020) — the architecture family (residual CNN, board-tensor encoding, human-move-prediction objective) is copied from here, not invented.
