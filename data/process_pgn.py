@@ -109,13 +109,6 @@ def iter_pgn_rows(pgn_path: Path, mode: str, usernames: set[str] | None = None):
                 board.push(move)
 
 
-def process_pgn_file(pgn_path: Path, mode: str, usernames: set[str] | None = None) -> list[dict]:
-    """Small-dataset convenience wrapper: materializes iter_pgn_rows() as a list.
-    Kept for tests and one-off scripts; main() below uses iter_pgn_rows() directly
-    with chunked writes to avoid holding a full dataset in memory."""
-    return list(iter_pgn_rows(pgn_path, mode, usernames))
-
-
 def write_parquet_chunked(pgn_path: Path, mode: str, out_path: Path, usernames: set[str] | None = None) -> dict:
     """Stream rows from a PGN file straight to parquet in fixed-size chunks,
     so peak memory is bounded by CHUNK_SIZE rows, not the whole dataset."""

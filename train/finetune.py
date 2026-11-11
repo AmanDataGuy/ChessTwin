@@ -16,7 +16,6 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
-import wandb
 from models.encoding import MoveVocabulary
 from models.network import PolicyNetwork
 from train.pretrain import PositionDataset, evaluate, load_config, top_k_accuracy
@@ -66,7 +65,6 @@ def main() -> None:
         start_epoch = resume_checkpoint["epoch"] + 1
         print(f"Resuming from {resume_path} at epoch {start_epoch}")
 
-    wandb.init(project="chess-persona", name="finetune", mode=config["training"]["wandb_mode"], config=config)
 
     epochs = config["training"]["finetune_epochs"]
     step = 0
@@ -85,11 +83,9 @@ def main() -> None:
             if step % 200 == 0:
                 top1 = top_k_accuracy(logits, labels, 1)
                 print(f"epoch {epoch} step {step} loss {loss.item():.4f} top1 {top1:.4f}")
-                wandb.log({"train/loss": loss.item(), "train/top1": top1, "step": step})
 
         val_metrics = evaluate(model, val_loader, device)
         print(f"epoch {epoch} val: {val_metrics}")
-        wandb.log({**{f"val/{k}": v for k, v in val_metrics.items()}, "epoch": epoch})
 
         torch.save(
             {
@@ -109,7 +105,6 @@ def main() -> None:
     )
     resume_path.unlink(missing_ok=True)
     print(f"Saved checkpoint to {checkpoint_path}")
-    wandb.finish()
 
 
 if __name__ == "__main__":

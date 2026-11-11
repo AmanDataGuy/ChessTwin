@@ -12,6 +12,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu   # CPU wheel: CI has no GPU, and it's ~10x smaller
       - run: pip install -r requirements.txt
       - run: ruff check .
       - run: pytest

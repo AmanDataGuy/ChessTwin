@@ -1,4 +1,5 @@
-# ChessPersona default config. See plan_ahead.md Section 1 for why these values were chosen.
+# ChessPersona default config. These are the Run 3 settings that produced the deployed
+# checkpoint; technical_report.md explains why each value was chosen.
 
 data:
   chesscom_usernames: ["stronkkkest", "desichessss", "due4awinn"]   # desichessss: 2022-04 to 2025-07; due4awinn: 2022-04, 2024-12 to 2025-09
@@ -27,28 +28,19 @@ training:
   batch_size_fallback: 128
   mixed_precision: true
   pretrain_lr: 0.001
-  finetune_lr: 0.0002
+  finetune_lr: 0.0001
   pretrain_epochs: 8
-  finetune_epochs: 5
-  # This dev machine cannot run DataLoader multiprocessing workers without
-  # OOMing (Windows spawn duplicates the loaded dataframe per worker), so
-  # training runs single-process CPU-bound FEN encoding -- slower per epoch,
-  # but the user opted for a long, uncapped, quality-first run over a fast
-  # capped one (first attempt at 1 pretrain epoch / 400k-capped finetune
-  # blundered badly and didn't specialize in Aman's openings -- too little
-  # signal). null caps below mean "use the full split". See plan_ahead.md.
+  finetune_epochs: 12
+  # Optional row caps per split; null means "use the full split". Run 1 used
+  # small caps and underfit badly, so Run 3 trains uncapped.
   pretrain_max_train_positions: null
   pretrain_max_val_positions: 20_000
   finetune_max_train_positions: null
   finetune_max_val_positions: 15_000
-  # Opening/early-middlegame positions (move_number < 10) are duplicated 3x in
-  # the fine-tune train set only (not val) -- amplifies Aman's specific
-  # repertoire signal, which is otherwise a small fraction of total rows next
-  # to the much larger mid/endgame position count. Added after live play
-  # showed the model wasn't reliably choosing Aman's known openings (French,
-  # Catalan) even after the first full retrain.
-  finetune_oversample_early_moves_factor: 2
-  wandb_mode: "disabled"   # wandb's background service process crashed a multi-hour unattended run under this machine's memory pressure (ConnectionResetError, killed training); print-based logging (captured in the run's own output) is sufficient for this project. Flip to "online"/"offline" if wandb is needed again.
+  # Opening/early-middlegame positions (move_number < 10) are duplicated this
+  # many times in the fine-tune train set only (not val), to amplify Aman's
+  # repertoire signal against the much larger mid/endgame position count.
+  finetune_oversample_early_moves_factor: 3
 
 engine:
-  stockfish_path: "engine/stockfish/stockfish-windows-x86-64-universal.exe"   # Stockfish 19, downloaded for Stage 7
+  stockfish_path: "stockfish"   # a name on PATH (e.g. `apt install stockfish`) or a path relative to the repo root

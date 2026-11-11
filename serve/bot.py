@@ -36,6 +36,7 @@ import chess.engine
 import torch
 import yaml
 
+from data.fetch_personal_games import load_dotenv
 from models.encoding import board_to_tensor
 from serve.api import _load_model
 
@@ -51,18 +52,6 @@ RECONNECT_DELAY_SECONDS = 5
 SAFETY_TOP_K = 4
 SAFETY_MOVETIME_SECONDS = 0.05
 BLUNDER_THRESHOLD_CP = 250
-
-
-def load_dotenv() -> None:
-    env_path = REPO_ROOT / ".env"
-    if not env_path.exists():
-        return
-    for line in env_path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, _, value = line.partition("=")
-        os.environ.setdefault(key.strip(), value.strip())
 
 
 def pick_move(board: chess.Board, engine: chess.engine.SimpleEngine) -> chess.Move:
@@ -144,7 +133,7 @@ def main() -> None:
 
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
-    engine_path = str(REPO_ROOT / config["engine"]["stockfish_path"])
+    engine_path = config["engine"]["stockfish_path"]
 
     session = berserk.TokenSession(token)
     client = berserk.Client(session)

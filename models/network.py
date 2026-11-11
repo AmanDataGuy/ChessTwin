@@ -1,9 +1,8 @@
 """Stage 6: ResNet policy network.
 
-6 residual blocks, 64 channels by default -- matches Maia Chess's proven size
-(see plan_ahead.md Section 0/1 for why this size was chosen: it fits comfortably
-on a 6GB GPU and there's no evidence a larger net is needed to prove this
-project's hypothesis). Takes the Stage 3 board tensor (BOARD_PLANES, 8, 8) and
+6 residual blocks, 64 channels by default -- matches Maia Chess's proven size;
+it fits comfortably on a 6GB GPU and there's no evidence a larger net is needed
+to prove this project's hypothesis. Takes the Stage 3 board tensor (BOARD_PLANES, 8, 8) and
 outputs raw logits over the move vocabulary -- legal-move masking is applied by
 the caller via MoveVocabulary.legal_move_mask(), not inside the network.
 """

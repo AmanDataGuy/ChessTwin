@@ -21,7 +21,7 @@ from pathlib import Path
 
 import requests
 
-from serve.bot import load_dotenv
+from data.fetch_personal_games import load_dotenv
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 HEADERS_UA = {"User-Agent": "ChessPersona research project (contact: ankit.work2026@gmail.com)"}

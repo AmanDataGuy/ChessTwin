@@ -2,7 +2,7 @@
 
 Single, continuously-maintained record of the project: architecture, every real number produced, everything tried, what failed and why, and current status. Supersedes and consolidates the former `plan_ahead.md` (forward-looking plan) and `progress_report.md` (backward-looking log), which grew heavily redundant with each other as the project moved from planning into iterative training/deployment. This file is updated after every meaningful run, fix, or decision — do not let it go stale.
 
-Last updated: 2026-09-12.
+Last updated: 2026-11-12.
 
 ---
 
@@ -48,9 +48,9 @@ Split: game-level 80/10/10 (never position-level — positions within a game are
 | 9 | Fine-tuning | Done (3 full runs — see §6) |
 | 10 | Evaluation/ablation | Done — re-run after every retrain |
 | 11 | Serving (API + Lichess bot) | Live at lichess.org/@/ChessTwinBot, running Run 3 checkpoint |
-| 12 | Tests/docs/polish | Ongoing — 21/21 tests passing, lint clean |
+| 12 | Tests/docs/polish | Done — 20/20 tests passing, lint clean |
 
-Full test suite: `tests/test_{sanity,encoding,splits,model_forward,api}.py`, 21 tests.
+Full test suite: `tests/test_{encoding,splits,model_forward,api}.py`, 20 tests.
 
 ## 5. Build-phase issues and fixes (Stages 0-7)
 
@@ -202,4 +202,15 @@ uvicorn serve.api:app --reload            # Stage 11 (API)
 python -m serve.bot                       # Stage 11 (Lichess bot; needs LICHESS_BOT_TOKEN in .env; stop before training)
 ```
 
-Setup, including the CUDA-torch install fix and Stockfish download, is in `README.md`.
+Setup, checkpoint download and Stockfish install are in `README.md`.
+
+## 10. Pack-up (2026-11-12)
+
+The project is finished. Final cleanup before archiving:
+
+- **CI had never passed.** There was no pytest config, so a bare `pytest` (what CI runs) couldn't import the repo's packages; it only worked locally via `python -m pytest`. Fixed with `pyproject.toml` (`pythonpath = ["."]`). CI also now installs CPU-only torch.
+- **Config restored to Run 3.** `configs/default.yaml` had been left on the reverted Run 4 fine-tune settings. It now matches the config embedded in the deployed `finetuned.pt` (lr 1e-4, 12 epochs, 3x oversampling).
+- **Stockfish path is portable.** It was hard-coded to a Windows `.exe`; it now defaults to `stockfish` on PATH.
+- **Removed:** wandb (disabled since Run 3, so its calls were no-ops), an unused `process_pgn_file` helper, a placeholder `1+1==2` test, and a duplicated `.env` loader (`serve/matchmaking.py` no longer imports torch through `serve/bot.py`).
+- **Stale summaries fixed.** `data/processed/summary.json` and `splits_summary.json` still described the pre-`due4awinn` dataset; regenerated from the parquet. The stored splits were confirmed to regenerate byte-for-byte from seed 42.
+- **Artifacts moved off the dev machine.** Checkpoints are on [huggingface.co/amanDS5153/ChessTwin](https://huggingface.co/amanDS5153/ChessTwin) (public). Raw PGNs (zstd), processed parquet, splits and eval outputs are on the private `amanDS5153/ChessTwin-data` HF dataset. `finetuned_run3_backup.pt` was a byte-identical copy of `finetuned.pt` and was dropped.

@@ -2,8 +2,7 @@
 
 Trains the ResNet policy head with cross-entropy loss (supervised behavioral
 cloning, not RL, per spec Section 2) to predict human moves. Tracks loss and
-top-1/top-3 accuracy on the pretrain val split via wandb (offline mode by
-default -- no account needed). Saves the resulting checkpoint as the base
+top-1/top-3 accuracy on the pretrain val split (printed to stdout). Saves the resulting checkpoint as the base
 model that finetune.py continues training from.
 """
 
@@ -20,7 +19,6 @@ import yaml
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
-import wandb
 from models.encoding import MoveVocabulary, board_to_tensor
 from models.network import PolicyNetwork
 
@@ -121,10 +119,7 @@ def main() -> None:
     # Windows' spawn-based multiprocessing re-pickles the whole loaded dataframe to
     # each DataLoader worker; on this machine's available RAM that duplication
     # reliably OOMs at num_workers>0 (confirmed by testing), so training runs
-    # single-process. To still finish in a reasonable wall-clock time on a single
-    # CPU core doing FEN->tensor encoding, train/val are capped to a fixed sample
-    # size rather than the full 4.17M/517k rows -- a deliberate, logged time-budget
-    # tradeoff, not a silent shortcut (see README's limitations section).
+    # single-process. Optional row caps come from the config (null = full split).
     max_train = config["training"].get("pretrain_max_train_positions")
     max_val = config["training"].get("pretrain_max_val_positions")
     train_ds = PositionDataset("pretrain", "train", vocab, max_rows=max_train)
@@ -145,8 +140,8 @@ def main() -> None:
     checkpoint_path = CHECKPOINT_DIR / "pretrained.pt"
     resume_path = CHECKPOINT_DIR / "pretrained_resume.pt"
     start_epoch = 0
-    # This machine has hit multiple unrelated crashes mid-training this session
-    # (a wandb IPC failure, a transient CUDA driver error) -- resuming from the
+    # The dev machine hit several unrelated crashes mid-training (e.g. transient
+    # CUDA driver errors) -- resuming from the
     # last completed epoch instead of restarting from scratch each time turns a
     # crash into a minor interruption instead of hours of lost progress.
     if resume_path.exists():
@@ -156,7 +151,6 @@ def main() -> None:
         start_epoch = resume_checkpoint["epoch"] + 1
         print(f"Resuming from {resume_path} at epoch {start_epoch}")
 
-    wandb.init(project="chess-persona", name="pretrain", mode=config["training"]["wandb_mode"], config=config)
 
     epochs = config["training"]["pretrain_epochs"]
     step = 0
@@ -178,11 +172,9 @@ def main() -> None:
                 elapsed = time.time() - start
                 rate = step * batch_size / elapsed
                 print(f"epoch {epoch} step {step} loss {loss.item():.4f} top1 {top1:.4f} ({rate:.0f} pos/s)")
-                wandb.log({"train/loss": loss.item(), "train/top1": top1, "step": step})
 
         val_metrics = evaluate(model, val_loader, device)
         print(f"epoch {epoch} val: {val_metrics}")
-        wandb.log({**{f"val/{k}": v for k, v in val_metrics.items()}, "epoch": epoch})
 
         torch.save(
             {
@@ -202,7 +194,6 @@ def main() -> None:
     )
     resume_path.unlink(missing_ok=True)  # training finished normally; the resume file has served its purpose
     print(f"Saved checkpoint to {checkpoint_path}")
-    wandb.finish()
 
 
 if __name__ == "__main__":

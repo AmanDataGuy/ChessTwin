@@ -84,7 +84,7 @@ def main() -> None:
     results["random"] = {"top1_acc": random_move_accuracy(sample)}
 
     print("Stockfish-best-move baseline...")
-    engine_path = str(REPO_ROOT / config["engine"]["stockfish_path"])
+    engine_path = config["engine"]["stockfish_path"]
     results["stockfish_best_move"] = {"top1_acc": stockfish_best_move_accuracy(sample, engine_path)}
 
     pretrained_path = CHECKPOINT_DIR / "pretrained.pt"

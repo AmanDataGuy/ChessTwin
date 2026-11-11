@@ -84,7 +84,7 @@ def main() -> None:
     random_acc = random_move_accuracy(sample)
     print(f"Random-legal-move accuracy: {random_acc:.4f}")
 
-    engine_path = str(REPO_ROOT / config["engine"]["stockfish_path"])
+    engine_path = config["engine"]["stockfish_path"]
     sf_acc = stockfish_best_move_accuracy(sample, engine_path)
     print(f"Stockfish-best-move accuracy: {sf_acc:.4f}")
 

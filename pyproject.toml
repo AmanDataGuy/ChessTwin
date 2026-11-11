@@ -1,0 +1,6 @@
+# pyproject.toml - tool config only (this repo is not an installable package).
+# pythonpath lets bare `pytest` import models/, data/, serve/, train/ from the repo root.
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
